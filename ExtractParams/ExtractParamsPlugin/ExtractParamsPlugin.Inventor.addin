@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Addin Type="Plugin">
+  <ClassId>{e30efad6-d747-4181-8a65-397b3f2bc359}</ClassId>
+  <ClientId>{e30efad6-d747-4181-8a65-397b3f2bc359}</ClientId>
+  <DisplayName>ExtractParamsPlugin</DisplayName>
+  <Description>a ExtractParamsPlugin</Description>
+  <Assembly>ExtractParamsPlugin.dll</Assembly>
+</Addin>
