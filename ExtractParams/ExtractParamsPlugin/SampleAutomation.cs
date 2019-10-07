@@ -63,6 +63,9 @@ namespace ExtractParamsPlugin
                 string currentDir = System.IO.Directory.GetCurrentDirectory();
                 LogTrace("Current Dir = " + currentDir);
 
+                // Helpful for debugging input files
+                //LogDir(currentDir);
+
                 Dictionary<string, string> inputParameters = JsonConvert.DeserializeObject<Dictionary<string, string>>(System.IO.File.ReadAllText("inputParams.json"));
                 logInputParameters(inputParameters);
 
@@ -104,6 +107,25 @@ namespace ExtractParamsPlugin
                         LogTrace("No 'documentPath' property");
                     }
                 }
+            }
+        }
+
+        static void LogDir(string dir)
+        {
+            try
+            {
+                foreach (string d in Directory.GetDirectories(dir))
+                {
+                    foreach (string f in Directory.GetFiles(d))
+                    {
+                        LogTrace(f);
+                    }
+                    LogDir(d);
+                }
+            }
+            catch (System.Exception excpt)
+            {
+                LogTrace(excpt.Message);
             }
         }
 
