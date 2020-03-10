@@ -78,6 +78,7 @@ namespace ExtractParamsPlugin
                         LogTrace("fullProjectPath = " + fullProjectPath);
                         DesignProject dp = inventorApplication.DesignProjectManager.DesignProjects.AddExisting(fullProjectPath);
                         dp.Activate();
+                        LogTrace("Project loaded");
                     }
                     else
                     {
@@ -94,12 +95,14 @@ namespace ExtractParamsPlugin
                         LogTrace("Opened input document file");
                         dynamic compDef = invDoc.ComponentDefinition;
 
+                        LogTrace("Input document opened");
                         string parameters = getParamsAsJson(compDef.Parameters.UserParameters);
 
                         System.IO.File.WriteAllText("documentParams.json", parameters);
                         LogTrace("Created documentParams.json");
 
                         // Save out Forge Viewable
+                        LogTrace("Creating viewable for doc: " + invDoc.DisplayName);
                         CreateViewable(invDoc);
                     }
                     else
@@ -144,26 +147,35 @@ namespace ExtractParamsPlugin
                 }
               }
             */
-            List<object> parameters = new List<object>();
-            foreach (dynamic param in userParameters)
+            try
             {
-                List<object> paramProperties = new List<object>();
-                if (param.ExpressionList != null)
+
+
+                List<object> parameters = new List<object>();
+                foreach (dynamic param in userParameters)
                 {
-                    string[] expressions = param.ExpressionList.GetExpressionList();
-                    JArray values = new JArray(expressions);
-                    paramProperties.Add(new JProperty("values", values));
+                    List<object> paramProperties = new List<object>();
+                    if (param.ExpressionList != null)
+                    {
+                        string[] expressions = param.ExpressionList.GetExpressionList();
+                        JArray values = new JArray(expressions);
+                        paramProperties.Add(new JProperty("values", values));
+                    }
+                    paramProperties.Add(new JProperty("value", param.Expression));
+                    paramProperties.Add(new JProperty("unit", param.Units));
+                    parameters.Add(new JProperty(param.Name, new JObject(paramProperties.ToArray())));
                 }
-                paramProperties.Add(new JProperty("value", param.Expression));
-                paramProperties.Add(new JProperty("unit", param.Units));
+                JObject allParameters = new JObject(parameters.ToArray());
+                string paramsJson = allParameters.ToString();
+                LogTrace(paramsJson);
 
-                parameters.Add(new JProperty(param.Name, new JObject(paramProperties.ToArray())));
+                return paramsJson;
             }
-            JObject allParameters = new JObject(parameters.ToArray());
-            string paramsJson = allParameters.ToString();
-            LogTrace(paramsJson);
-
-            return paramsJson;
+            catch (Exception e)
+            {
+                LogError("Error reading params: " + e.Message);
+                return "";
+            }
         }
 
         public void logInputParameters(Dictionary<string, string> parameters)
@@ -186,6 +198,7 @@ namespace ExtractParamsPlugin
             // Save out Forge Viewable
             var docDir = Path.GetDirectoryName(doc.FullFileName);
             string viewableDir = SaveForgeViewable(doc);
+            LogTrace("saving viewable to: " + viewableDir);
             ZipOutput(viewableDir, "viewable.zip");
         }
 
